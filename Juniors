@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+import re
+import sys
+from collections import defaultdict
+
+LOGFILE = 'webapp.log'  # adjust if your log file has a different name
+
+def main():
+    counts = defaultdict(int)
+    examples = {}
+
+    # regex to match a log level: e.g. [WARN] Fast response,  
+    level_re = re.compile(r'\b(WARN|ERROR|INFO|DEBUG|FATAL)\b')
+
+    try:
+        with open(LOGFILE, encoding='utf-8') as f:
+            for line in f:
+                m = level_re.search(line)
+                if m:
+                    lvl = m.group(1)
+                    counts[lvl] += 1
+                    # store first example for each level
+                    if lvl not in examples:
+                        # strip timestamp and level, keep message
+                        msg = line.strip()
+                        examples[lvl] = msg
+    except FileNotFoundError:
+        print(f'Error: cannot find log file at "{LOGFILE}"')
+        sys.exit(1)
+
+    # Print results
+    for lvl in sorted(counts, key=lambda l: counts[l], reverse=True):
+        cnt = counts[lvl]
+        msg = examples.get(lvl, 'No example available')
+        print(f'The log contains {cnt} messages of type "{lvl}", such as "{msg}".')
+
+if __name__ == '__main__':
+    main()
