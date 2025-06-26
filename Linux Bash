@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Verificar que se proporcione un archivo de log
+if [ $# -ne 1 ]; then
+  echo "Uso: $0 archivo_de_log"
+  exit 1
+fi
+
+LOGFILE="$1"
+
+# Verifica si el archivo existe
+if [ ! -f "$LOGFILE" ]; then
+  echo "El archivo '$LOGFILE' no existe."
+  exit 2
+fi
+
+# Detectar tipos de errores (por ejemplo, ERROR, WARN, INFO)
+echo "Resumen de tipos de mensajes encontrados en '$LOGFILE':"
+echo
+
+# Extrae los tipos de mensajes y cuenta ocurrencias
+grep -oE '\b(ERROR|WARN|INFO|DEBUG|FATAL)\b' "$LOGFILE" | sort | uniq -c | sort -nr | while read -r count type; do
+    # Obtener un ejemplo representativo del tipo de mensaje
+    example=$(grep -m 1 "$type" "$LOGFILE")
+    echo "El registro contiene $count mensajes de tipo \"$type\", como \"$example\""
+done
